@@ -1,6 +1,6 @@
 import numpy as np
 
-# ======================== ПОДЫНТЕГРАЛЬНЫЕ ФУНКЦИИ ========================
+
 def f1(x):
     return x ** 2
 
@@ -32,26 +32,24 @@ functions = [
     {"name": "1/(1+x^2)", "f": f4, "F": F4, "a": 0, "b": 1}
 ]
 
-# ======================== ВСПОМОГАТЕЛЬНЫЕ ФУНКЦИИ ========================
 def change_variable(f, a, b):
-    """Возвращает функцию g(t) = f((a+b)/2 + (b-a)/2 * t) для перехода к [-1,1]"""
+    #Возвращает функцию g(t) = f((a+b)/2 + (b-a)/2 * t) для перехода к [-1,1]
     def g(t):
         x = (a + b) / 2 + (b - a) / 2 * t
         return f(x)
     return g
 
 def finite_difference(f, x, h=1e-6, order=1):
-    """Численное вычисление производной (для формулы Эйлера-Маклорена)"""
+    #Численное вычисление производной (для формулы Эйлера-Маклорена)
     if order == 1:
         return (f(x + h) - f(x - h)) / (2 * h)
     elif order == 2:
-        return (f(x + h) - 2*f(x) + f(x - h)) / (h**2)
+        return (f(x + h) - 2 * f(x) + f(x - h)) / (h ** 2)
     elif order == 3:
-        return (f(x + 2*h) - 2*f(x + h) + 2*f(x - h) - f(x - 2*h)) / (2 * h**3)
+        return (f(x + 2 * h) - 2 * f(x + h) + 2 * f(x - h) - f(x - 2 * h)) / (2 * h ** 3)
     else:
         raise ValueError("Поддерживаются производные до 3-го порядка")
 
-# ======================== ПРОСТЕЙШИЕ КВАДРАТУРЫ (из вашего кода) ========================
 def left_rectangle(f, a, b, n):
     h = (b - a) / n
     result = 0.0
@@ -93,7 +91,6 @@ def simpson(f, a, b, n):
     return result * h / 3
 
 def three_eighths(f, a, b, n):
-    """Правило трёх восьмых (требует n кратно 3)"""
     if n % 3 != 0:
         n = n + (3 - n % 3) if n % 3 != 0 else n
     h = (b - a) / n
@@ -105,7 +102,6 @@ def three_eighths(f, a, b, n):
             result += 3 * f(a + i * h)
     return result * 3 * h / 8
 
-# ======================== КВАДРАТУРА ГАУССА ========================
 gauss_nodes_weights = {
     2: ([-0.5773502691896257, 0.5773502691896257], [1.0, 1.0]),
     3: ([-0.7745966692414834, 0.0, 0.7745966692414834], [0.5555555555555556, 0.8888888888888888, 0.5555555555555556]),
@@ -116,14 +112,11 @@ gauss_nodes_weights = {
 }
 
 def gauss_quadrature(f, a, b, n):
-    if n not in gauss_nodes_weights:
-        raise ValueError(f"Квадратура Гаусса для n={n} не реализована")
     nodes, weights = gauss_nodes_weights[n]
     g = change_variable(f, a, b)
     result = sum(w * g(t) for w, t in zip(weights, nodes))
     return (b - a) / 2 * result
 
-# ======================== КВАДРАТУРА ЧЕБЫШЕВА ========================
 chebyshev_nodes = {
     2: [-0.577350, 0.577350],
     3: [-0.707107, 0.0, 0.707107],
@@ -132,70 +125,39 @@ chebyshev_nodes = {
 }
 
 def chebyshev_quadrature(f, a, b, n):
-    if n not in chebyshev_nodes:
-        raise ValueError(f"Квадратура Чебышева для n={n} не реализована (существует для n=1..7,9)")
     nodes = chebyshev_nodes[n]
     weight = 2.0 / n
     g = change_variable(f, a, b)
     result = sum(g(t) for t in nodes)
     return (b - a) / 2 * weight * result
 
-# ======================== КВАДРАТУРА РАДО ========================
 rado_nodes_weights = {
-    2: ([-1/3, 1], [1.0, 1.0]),
+    2: ([-1 / 3, 1], [1.0, 1.0]),
     3: ([-0.289897, 0.689898, 1.0], [0.277778, 0.722222, 0.277778]),
     4: ([-0.575319, 0.181066, 0.822824, 1.0], [0.163266, 0.466565, 0.370169, 0.122222]),
     5: ([-0.720480, -0.167181, 0.446314, 0.885792, 1.0], [0.104656, 0.337433, 0.410087, 0.147824, 0.074074])
 }
 
 def radau_quadrature(f, a, b, n):
-    """Квадратура Радо (фиксирован правый узел = 1)"""
-    if n not in rado_nodes_weights:
-        raise ValueError(f"Квадратура Радо для n={n} не реализована")
     nodes, weights = rado_nodes_weights[n]
     g = change_variable(f, a, b)
     result = sum(w * g(t) for w, t in zip(weights, nodes))
     return (b - a) / 2 * result
 
-# ======================== КВАДРАТУРА ЛОБАТТО ========================
 lobatto_nodes_weights = {
-    3: ([-1.0, 0.0, 1.0], [1/3, 4/3, 1/3]),
+    3: ([-1.0, 0.0, 1.0], [1 / 3, 4 / 3, 1 / 3]),
     4: ([-1.0, -0.4472135954999579, 0.4472135954999579, 1.0],
-        [1/6, 5/6, 5/6, 1/6]),
+        [1 / 6, 5 / 6, 5 / 6, 1 / 6]),
     5: ([-1.0, -0.6546536707079771, 0.0, 0.6546536707079771, 1.0],
         [0.1, 0.5444444444444444, 0.7111111111111111, 0.5444444444444444, 0.1])
 }
 
 def lobatto_quadrature(f, a, b, n):
-    """Квадратура Лобатто (фиксированы оба конца)"""
-    if n not in lobatto_nodes_weights:
-        raise ValueError(f"Квадратура Лобатто для n={n} не реализована")
     nodes, weights = lobatto_nodes_weights[n]
     g = change_variable(f, a, b)
     result = sum(w * g(t) for w, t in zip(weights, nodes))
     return (b - a) / 2 * result
 
-# ======================== КВАДРАТУРА ГАУССА-КРИСТОФФЕЛЯ (общая) ========================
-def gauss_kristoffel_quadrature(f, a, b, p, n, orthogonal_poly_roots):
-    """
-    Общая формула Гаусса-Кристоффеля:
-    ∫_a^b p(x) f(x) dx ≈ Σ A_i f(x_i)
-
-    Параметры:
-        f - подынтегральная функция
-        a, b - пределы интегрирования (могут быть ±∞)
-        p - весовая функция
-        n - число узлов
-        orthogonal_poly_roots - корни ортогонального многочлена Q_n(x)
-        orthogonal_poly_deriv - производная Q_n'(x_i) (опционально)
-    
-    Возвращает значение интеграла
-    """
-    # Для простоты реализуем через интерполяционную формулу (5.57)
-    # В реальных приложениях узлы и веса берутся из таблиц
-    raise NotImplementedError("Общая формула требует предварительного вычисления узлов и весов")
-
-# ======================== КВАДРАТУРА ГАУССА-ЛАГЕРРА ========================
 laguerre_nodes_weights = {
     2: ([0.585786437626905, 3.414213562373095], [0.8535533905932737, 0.1464466094067263]),
     3: ([0.4157745567834791, 2.294280360279042, 6.289945082937479],
@@ -207,13 +169,9 @@ laguerre_nodes_weights = {
 }
 
 def laguerre_quadrature(f, n):
-    """∫₀^∞ e^{-x} f(x) dx ≈ Σ A_i f(x_i)"""
-    if n not in laguerre_nodes_weights:
-        raise ValueError(f"Квадратура Лагерра для n={n} не реализована")
     nodes, weights = laguerre_nodes_weights[n]
     return sum(w * f(x) for w, x in zip(weights, nodes))
 
-# ======================== КВАДРАТУРА ГАУССА-ЭРМИТА ========================
 hermite_nodes_weights = {
     2: ([-0.7071067811865476, 0.7071067811865476], [0.8862269254527579, 0.8862269254527579]),
     3: ([-1.224744871391589, 0.0, 1.224744871391589], [0.2954089751509193, 1.181635900603677, 0.2954089751509193]),
@@ -224,49 +182,32 @@ hermite_nodes_weights = {
 }
 
 def hermite_quadrature(f, n):
-    """∫_{-∞}^{∞} e^{-x^2} f(x) dx ≈ Σ A_i f(x_i)"""
-    if n not in hermite_nodes_weights:
-        raise ValueError(f"Квадратура Эрмита для n={n} не реализована")
     nodes, weights = hermite_nodes_weights[n]
     return sum(w * f(x) for w, x in zip(weights, nodes))
 
-# ======================== ФОРМУЛА ЭЙЛЕРА-МАКЛОРЕНА ========================
 def euler_maclaurin(f, a, b, n, include_derivatives=True, derivative_order=1):
-    """
-    Составная формула Эйлера-Маклорена:
-    I = h*(y0/2 + y1 + ... + y_{n-1} + yn/2) 
-        + h^2/12*(f'(a) - f'(b)) 
-        - h^4/720*(f'''(a) - f'''(b)) + ...
-    """
     h = (b - a) / n
-    # Основная часть — формула трапеций
     result = (f(a) + f(b)) / 2
     for i in range(1, n):
         result += f(a + i * h)
     result *= h
-    
+
     if include_derivatives:
         if derivative_order >= 1:
             df_a = finite_difference(f, a, h=1e-6, order=1)
             df_b = finite_difference(f, b, h=1e-6, order=1)
-            result += (h**2 / 12) * (df_a - df_b)
-        
+            result += (h ** 2 / 12) * (df_a - df_b)
+
         if derivative_order >= 2:
             d3f_a = finite_difference(f, a, h=1e-4, order=3)
             d3f_b = finite_difference(f, b, h=1e-4, order=3)
-            result -= (h**4 / 720) * (d3f_a - d3f_b)
-    
+            result -= (h ** 4 / 720) * (d3f_a - d3f_b)
+
     return result
 
-# ======================== ОСНОВНАЯ ПРОГРАММА ========================
-print("=" * 100)
-print("ИССЛЕДОВАНИЕ ВСЕХ КВАДРАТУРНЫХ ФОРМУЛ")
-print("=" * 100)
 
-# ----- 1. Сравнение простейших квадратур -----
-print("\n" + "=" * 100)
-print("1. ПРОСТЕЙШИЕ КВАДРАТУРЫ (прямоугольники, трапеции, Симпсон, 3/8)")
-print("=" * 100)
+
+print("1. Квадратуры прямоугольников, трапеции, Симпсона, 3/8")
 
 n_values = [3, 4, 6, 8]
 
@@ -277,27 +218,24 @@ for func in functions:
 
     for n in n_values:
         print(f"\nn = {n} (число отрезков):")
-        
+
         I_left = left_rectangle(func["f"], func["a"], func["b"], n)
         I_right = right_rectangle(func["f"], func["a"], func["b"], n)
         I_mid = middle_rectangle(func["f"], func["a"], func["b"], n)
         I_trap = trapezia(func["f"], func["a"], func["b"], n)
         I_simp = simpson(func["f"], func["a"], func["b"], n)
-        
-        print(f"  Левые прямоугольники:     {I_left:.10f}  | ошибка = {abs(I_left - exact):.2e}")
-        print(f"  Правые прямоугольники:    {I_right:.10f}  | ошибка = {abs(I_right - exact):.2e}")
-        print(f"  Средние прямоугольники:   {I_mid:.10f}  | ошибка = {abs(I_mid - exact):.2e}")
-        print(f"  Трапеций:                 {I_trap:.10f}  | ошибка = {abs(I_trap - exact):.2e}")
-        print(f"  Симпсона:                 {I_simp:.10f}  | ошибка = {abs(I_simp - exact):.2e}")
-        
+
+        print(f"  Левые прямоугольники:     {I_left:.10f}  | погрешность = {abs(I_left - exact):.2e}")
+        print(f"  Правые прямоугольники:    {I_right:.10f}  | погрешность = {abs(I_right - exact):.2e}")
+        print(f"  Средние прямоугольники:   {I_mid:.10f}  | погрешность = {abs(I_mid - exact):.2e}")
+        print(f"  Трапеций:                 {I_trap:.10f}  | погрешность = {abs(I_trap - exact):.2e}")
+        print(f"  Симпсона:                 {I_simp:.10f}  | погрешность = {abs(I_simp - exact):.2e}")
+
         if n % 3 == 0:
             I_38 = three_eighths(func["f"], func["a"], func["b"], n)
-            print(f"  Трёх восьмых:             {I_38:.10f}  | ошибка = {abs(I_38 - exact):.2e}")
+            print(f"  Трёх восьмых:             {I_38:.10f}  | погрешность = {abs(I_38 - exact):.2e}")
 
-# ----- 2. Квадратуры высокого порядка (Гаусс, Чебышев, Радо, Лобатто) -----
-print("\n" + "=" * 100)
-print("2. КВАДРАТУРЫ ВЫСОКОГО ПОРЯДКА ТОЧНОСТИ (Гаусс, Чебышев, Радо, Лобатто)")
-print("=" * 100)
+print("\n2. Квадратуры Гаусса, Чебышева, Радо, Лобатто")
 
 n_nodes = [2, 3, 4, 5]
 
@@ -308,118 +246,58 @@ for func in functions:
 
     for n in n_nodes:
         print(f"\nn = {n} (число узлов):")
-        
+
         try:
             I_gauss = gauss_quadrature(func["f"], func["a"], func["b"], n)
-            print(f"  Гаусс (порядок {2*n-1}):   {I_gauss:.12f}  | ошибка = {abs(I_gauss - exact):.2e}")
+            print(f"  Гаусс (порядок {2 * n - 1}):   {I_gauss:.12f}  | погрешность = {abs(I_gauss - exact):.2e}")
         except ValueError as e:
             print(f"  Гаусс: {e}")
-        
+
         try:
             I_cheb = chebyshev_quadrature(func["f"], func["a"], func["b"], n)
-            print(f"  Чебышев:                  {I_cheb:.12f}  | ошибка = {abs(I_cheb - exact):.2e}")
+            print(f"  Чебышев:                  {I_cheb:.12f}  | погрешность = {abs(I_cheb - exact):.2e}")
         except ValueError as e:
             print(f"  Чебышев: {e}")
-        
+
         try:
             I_radau = radau_quadrature(func["f"], func["a"], func["b"], n)
-            print(f"  Радо (фикс. правый узел): {I_radau:.12f}  | ошибка = {abs(I_radau - exact):.2e}")
+            print(f"  Радо (фикс. правый узел): {I_radau:.12f}  | погрешность = {abs(I_radau - exact):.2e}")
         except ValueError as e:
             print(f"  Радо: {e}")
-        
+
         if n >= 3:
             try:
                 I_lobatto = lobatto_quadrature(func["f"], func["a"], func["b"], n)
-                print(f"  Лобатто (фикс. оба конца): {I_lobatto:.12f}  | ошибка = {abs(I_lobatto - exact):.2e}")
+                print(f"  Лобатто (фикс. оба конца): {I_lobatto:.12f}  | погрешность = {abs(I_lobatto - exact):.2e}")
             except ValueError as e:
                 print(f"  Лобатто: {e}")
 
-# ----- 3. Формула Эйлера-Маклорена -----
-print("\n" + "=" * 100)
-print("3. ФОРМУЛА ЭЙЛЕРА-МАКЛОРЕНА (сравнение с трапецией)")
-print("=" * 100)
+print("\n3. Формула Эйлера-Маклорена (сравнение с трапецией)")
 
 for func in functions:
     print(f"\nФУНКЦИЯ: {func['name']} на отрезке [{func['a']}, {func['b']}]")
     exact = func["F"](func["b"]) - func["F"](func["a"])
     print(f"Точное значение: {exact:.12f}")
-    
+
     for n in [4, 8, 16]:
         I_trap = trapezia(func["f"], func["a"], func["b"], n)
         I_em1 = euler_maclaurin(func["f"], func["a"], func["b"], n, include_derivatives=True, derivative_order=1)
         I_em2 = euler_maclaurin(func["f"], func["a"], func["b"], n, include_derivatives=True, derivative_order=2)
-        
+
         print(f"\nn = {n}:")
-        print(f"  Трапеция:             {I_trap:.12f}  | ошибка = {abs(I_trap - exact):.2e}")
-        print(f"  Эйлер-Маклорен (h^2): {I_em1:.12f}  | ошибка = {abs(I_em1 - exact):.2e}")
-        print(f"  Эйлер-Маклорен (h^4): {I_em2:.12f}  | ошибка = {abs(I_em2 - exact):.2e}")
+        print(f"  Трапеция:             {I_trap:.12f}  | погрешность = {abs(I_trap - exact):.2e}")
+        print(f"  Эйлер-Маклорен (h^2): {I_em1:.12f}  | погрешность = {abs(I_em1 - exact):.2e}")
+        print(f"  Эйлер-Маклорен (h^4): {I_em2:.12f}  | погрешность = {abs(I_em2 - exact):.2e}")
 
-# ----- 4. Квадратуры Лагерра и Эрмита -----
-print("\n" + "=" * 100)
-print("4. КВАДРАТУРЫ ГАУССА-ЛАГЕРРА И ГАУССА-ЭРМИТА (интегралы с весом)")
-print("=" * 100)
+print("\n4. Квадратуры Гаусса-Лагерра и Гаусса-Эрмита (интегралы с весом)")
 
-# Лагерр: ∫₀^∞ e^{-x} sin(x) dx = 1/2
-print("\n4.1. Квадратура Гаусса-Лаггерра: ∫₀^∞ e^{-x} sin(x) dx = 0.5")
+print("\n4.1. Квадратура Гаусса-Лагерра: ФУНКЦИЯ sin(x), точное значение = 0.5")
 for n in [2, 3, 4, 5]:
     I_laguerre = laguerre_quadrature(np.sin, n)
-    print(f"  n = {n}: {I_laguerre:.10f}  | ошибка = {abs(I_laguerre - 0.5):.2e}")
+    print(f"  n = {n}: {I_laguerre:.10f}  | погрешность = {abs(I_laguerre - 0.5):.2e}")
 
-# Эрмит: ∫_{-∞}^{∞} e^{-x^2} x^4 dx = 3√π/4 ≈ 1.329340388179137
 exact_hermite = (3/4) * np.sqrt(np.pi)
-print(f"\n4.2. Квадратура Гаусса-Эрмита: ∫_{-∞}^{∞} e^{-x^2} x^4 dx = 3√π/4 ≈ {exact_hermite:.10f}")
+print(f"\n4.2. Квадратура Гаусса-Эрмита: ФУНКЦИЯ - х^4, точное значение = {exact_hermite:.10f}")
 for n in [2, 3, 4, 5]:
-    I_hermite = hermite_quadrature(lambda x: x**4, n)
-    print(f"  n = {n}: {I_hermite:.10f}  | ошибка = {abs(I_hermite - exact_hermite):.2e}")
-
-# ----- 5. Сравнительная таблица погрешностей при n=4 -----
-print("\n" + "=" * 100)
-print("5. СРАВНЕНИЕ ПОГРЕШНОСТЕЙ ПРИ n=4 (число узлов/отрезков)")
-print("=" * 100)
-
-print("\n{:<15} | {:>12} | {:>12} | {:>12} | {:>12} | {:>12} | {:>12}".format(
-    "Функция", "Трапеция", "Симпсон", "Гаусс", "Чебышев", "Радо", "Лобатто"))
-print("-" * 110)
-
-for func in functions:
-    exact = func["F"](func["b"]) - func["F"](func["a"])
-    
-    err_trap = abs(trapezia(func["f"], func["a"], func["b"], 4) - exact)
-    err_simp = abs(simpson(func["f"], func["a"], func["b"], 4) - exact)
-    err_gauss = abs(gauss_quadrature(func["f"], func["a"], func["b"], 4) - exact)
-    err_cheb = abs(chebyshev_quadrature(func["f"], func["a"], func["b"], 4) - exact)
-    err_radau = abs(radau_quadrature(func["f"], func["a"], func["b"], 4) - exact)
-    err_lobatto = abs(lobatto_quadrature(func["f"], func["a"], func["b"], 4) - exact)
-    
-    print("{:<15} | {:>12.2e} | {:>12.2e} | {:>12.2e} | {:>12.2e} | {:>12.2e} | {:>12.2e}".format(
-        func["name"], err_trap, err_simp, err_gauss, err_cheb, err_radau, err_lobatto))
-
-# ----- 6. Дополнительно: Гаусс-Кристоффель (пояснение) -----
-print("\n" + "=" * 100)
-print("6. ЗАМЕЧАНИЕ О ФОРМУЛЕ ГАУССА-КРИСТОФФЕЛЯ")
-print("=" * 100)
-print("""
-Формула Гаусса-Кристоффеля имеет вид:
-    ∫_a^b p(x) f(x) dx ≈ Σ A_i f(x_i)
-
-Она обобщает все рассмотренные выше квадратуры:
-    • p(x) = 1, [a,b] = [-1,1] → классическая формула Гаусса
-    • p(x) = 1/√(1-x²), [a,b] = [-1,1] → формула Эрмита (Мелера)
-    • p(x) = e^{-x}, [a,b] = [0,∞) → формула Лагерра
-    • p(x) = e^{-x²}, [a,b] = (-∞,∞) → формула Эрмита
-    • p(x) = (1-x)^α (1+x)^β, [a,b] = [-1,1] → формула Якоби
-
-Узлы x_i — корни ортогональных многочленов с весом p(x).
-Веса A_i вычисляются по интерполяционной формуле (5.57).
-
-В данной программе реализованы частные случаи:
-    - Гаусс (p=1 на [-1,1])
-    - Лагерр (p=e^{-x} на [0,∞))
-    - Эрмит (p=e^{-x²} на (-∞,∞))
-    - Радо (частный случай с фиксированным узлом)
-    - Лобатто (частный случай с фиксированными обоими узлами)
-""")
-
-print("\n" + "=" * 100)
-print("ВЫПОЛНЕНИЕ ЗАВЕРШЕНО")
-print("=" * 100)
+    I_hermite = hermite_quadrature(lambda x: x ** 4, n)
+    print(f"  n = {n}: {I_hermite:.10f}  | погрешность = {abs(I_hermite - exact_hermite):.2e}")
